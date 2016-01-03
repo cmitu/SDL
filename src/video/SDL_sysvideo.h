@@ -438,6 +438,7 @@ extern VideoBootStrap VITA_bootstrap;
 extern VideoBootStrap RPI_bootstrap;
 extern VideoBootStrap KMSDRM_bootstrap;
 extern VideoBootStrap KMSDRM_LEGACY_bootstrap;
+extern VideoBootStrap MALI_bootstrap;
 extern VideoBootStrap DUMMY_bootstrap;
 extern VideoBootStrap Wayland_bootstrap;
 extern VideoBootStrap NACL_bootstrap;
