@@ -727,7 +727,6 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
         } else {
             SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Override KMS ModeID received (SDL_VIDEO_KMSDRM_MODEID: %s)", mode_id_override);
             if ( !compare_drm_mode_info(dispdata->mode, connector->modes[SDL_atoi(mode_id_override)]) ) {
-                dispdata->modeset_pending = SDL_TRUE;
                 dispdata->mode = connector->modes[SDL_atoi(mode_id_override)];
             }
         }
@@ -755,8 +754,7 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
         if ((*override_mode).hdisplay != dispdata->mode.hdisplay ||
              (*override_mode).vdisplay != dispdata->mode.vdisplay ||
              (*override_mode).vrefresh != dispdata->mode.vrefresh) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Setting video mode to %dx%d @ %d",(*override_mode).hdisplay, (*override_mode).vdisplay, (*override_mode).vrefresh);
-            dispdata->modeset_pending = SDL_TRUE;
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Setting initial video mode to %dx%d @ %d",(*override_mode).hdisplay, (*override_mode).vdisplay, (*override_mode).vrefresh);
             dispdata->mode = (*override_mode);
         }
     }
