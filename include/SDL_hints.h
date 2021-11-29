@@ -784,6 +784,22 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_RAWINPUT_CORRELATE_XINPUT   "SDL_JOYSTICK_RAWINPUT_CORRELATE_XINPUT"
 
  /**
+  *  \brief  A variable controlling the behavior of SDL_JoystickName
+  *
+  *  Before 2.0.12, 'SDL_CreateJoystickName' would return the same name as reported by UDEV.
+  *  Starting with 2.0.12, the naming is no longer identical, the DEV name is tranformed so that:
+  *    - vendor names are de-duplicated
+  *    - consecutive spaces are coalesced
+  *    - spaces are trimmed from the start/end
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - use the new naming
+  *    "1"       - use the pre-2.0.12 naming (default)
+  *
+  */
+#define SDL_HINT_JOYSTICK_USE_OLD_NAME "SDL_JOYSTICK_USE_OLD_NAME"
+
+ /**
   *  \brief  A variable controlling whether a separate thread should be used
   *          for handling joystick detection and raw input messages on Windows
   *

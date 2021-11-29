@@ -1722,8 +1722,9 @@ PrefixMatch(const char *a, const char *b)
     return matchlen;
 }
 
-char *
-SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name)
+/* The libSDL upstream function SDL_CreateJoystickName */
+static char *
+SDL_Private_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name, const SDL_bool compat_naming)
 {
     static struct {
         const char *prefix;
@@ -1739,9 +1740,11 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
     char *name;
     size_t i, len;
 
-    custom_name = GuessControllerName(vendor, product);
-    if (custom_name) {
-        return SDL_strdup(custom_name);
+    if (!compat_naming) {
+        custom_name = GuessControllerName(vendor, product);
+        if (custom_name) {
+            return SDL_strdup(custom_name);
+        }
     }
 
     if (!vendor_name) {
@@ -1777,6 +1780,10 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
     } else {
         name = SDL_strdup("Controller");
     }
+
+    /* If old naming compatibility is requested, don't perform further corrections on the name */
+    if (compat_naming)
+        return name;
 
     /* Trim trailing whitespace */
     for (len = SDL_strlen(name); (len > 0 && name[len - 1] == ' '); --len) {
@@ -1824,6 +1831,21 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
 
     return name;
 }
+
+char *
+SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name)
+{
+    return SDL_Private_CreateJoystickName(vendor, product, vendor_name, product_name, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_USE_OLD_NAME, SDL_TRUE));
+}
+
+#ifdef SDL_JOYSTICK_LINUX
+/* Creates a backwards compatible (pre-2.0.12) joystick name */
+char *
+SDL_CreateCompatJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name)
+{
+    return SDL_Private_CreateJoystickName(vendor, product, vendor_name, product_name, SDL_FALSE);
+}
+#endif
 
 SDL_GameControllerType
 SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product)
