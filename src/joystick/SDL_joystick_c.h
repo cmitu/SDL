@@ -57,6 +57,12 @@ extern void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint1
  */
 extern char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name);
 
+/* Function to standardize the name for a controller, using a pre-2.0.12 compatible naming.
+   Use it only if access to pre-2.0.12 naming is needed !
+   This should be freed with SDL_free() when no longer needed
+ */
+extern char *SDL_CreateCompatJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name);
+
 /* Function to return the type of a controller */
 extern SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product);
 extern SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *name);

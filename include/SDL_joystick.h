@@ -420,6 +420,19 @@ extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualHat(SDL_Joystick *joystick, in
 extern DECLSPEC const char *SDLCALL SDL_JoystickName(SDL_Joystick *joystick);
 
 /**
+ * Get the implementation dependent name of a joystick (pre-2.0.12
+ *
+ * \param joystick the SDL_Joystick obtained from SDL_JoystickOpen()
+ * \returns the name of the selected joystick. If no name can be found, this
+ *          function returns NULL; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.0.16
+ *
+ * \sa SDL_JoystickName
+ */
+extern DECLSPEC const char *SDLCALL SDL_JoystickCompatName(SDL_Joystick *joystick);
+
+/**
  * Get the player index of an opened joystick.
  *
  * For XInput controllers this returns the XInput user index. Many joysticks

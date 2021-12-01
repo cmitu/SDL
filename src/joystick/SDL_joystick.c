@@ -386,6 +386,7 @@ SDL_JoystickOpen(int device_index)
     SDL_Joystick *joystick;
     SDL_Joystick *joysticklist;
     const char *joystickname = NULL;
+    const char *joystickname_compat = NULL;
 
     SDL_LockJoysticks();
 
@@ -434,6 +435,14 @@ SDL_JoystickOpen(int device_index)
     } else {
         joystick->name = NULL;
     }
+    // Set the compatible name for the Linux drivers
+#ifdef SDL_JOYSTICK_LINUX
+    if (driver == &SDL_LINUX_JoystickDriver) {
+        joystickname_compat = driver->GetCompatDeviceName(device_index);
+        joystick->compat_name = SDL_strdup(joystickname_compat);
+    } else
+#endif
+        joystick->compat_name = NULL;
 
     joystick->guid = driver->GetDeviceGUID(device_index);
 
@@ -832,6 +841,20 @@ SDL_JoystickName(SDL_Joystick *joystick)
     }
 
     return joystick->name;
+}
+
+/*
+ * Get the friendly _old_ (pre-2.0.12) name of this joystick
+ * Only implemented on Linux, other drivers will return the same name as `SDL_JoystickName`
+ */
+const char*
+SDL_JoystickCompatName(SDL_Joystick *joystick)
+{
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return NULL;
+    }
+
+    return joystick->compat_name;
 }
 
 /**
@@ -1722,7 +1745,8 @@ PrefixMatch(const char *a, const char *b)
     return matchlen;
 }
 
-/* The libSDL upstream function SDL_CreateJoystickName */
+/* The original libSDL 'SDL_CreateJoystickName'.
+  It has an extra parameter (bool compat_naming) to generate a pre-2.0.12 name when requested */
 static char *
 SDL_Private_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name, const SDL_bool compat_naming)
 {
@@ -1838,14 +1862,12 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
     return SDL_Private_CreateJoystickName(vendor, product, vendor_name, product_name, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_USE_OLD_NAME, SDL_TRUE));
 }
 
-#ifdef SDL_JOYSTICK_LINUX
 /* Creates a backwards compatible (pre-2.0.12) joystick name */
 char *
 SDL_CreateCompatJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name)
 {
-    return SDL_Private_CreateJoystickName(vendor, product, vendor_name, product_name, SDL_FALSE);
+    return SDL_Private_CreateJoystickName(vendor, product, vendor_name, product_name, SDL_TRUE);
 }
-#endif
 
 SDL_GameControllerType
 SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product)
