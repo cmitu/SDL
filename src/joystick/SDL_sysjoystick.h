@@ -65,7 +65,6 @@ struct _SDL_Joystick
 {
     SDL_JoystickID instance_id; /* Device instance, monotonically increasing from 0 */
     char *name;                 /* Joystick name - system dependent */
-    char *compat_name;          /* Joystick name - pre-2.0.12 format */
     char *serial;               /* Joystick serial */
     SDL_JoystickGUID guid;      /* Joystick guid */
 
@@ -197,9 +196,6 @@ typedef struct _SDL_JoystickDriver
 
     /* Function to get the autodetected controller mapping; returns false if there isn't any. */
     SDL_bool (*GetGamepadMapping)(int device_index, SDL_GamepadMapping * out);
-
-    /* Function to get the device-dependent old/compat name of a joystick */
-    const char *(*GetCompatDeviceName)(int device_index);
 
 } SDL_JoystickDriver;
 

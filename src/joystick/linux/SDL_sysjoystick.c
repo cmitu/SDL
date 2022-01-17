@@ -101,7 +101,6 @@ typedef struct SDL_joylist_item
     int device_instance;
     char *path;   /* "/dev/input/event2" or whatever */
     char *name;   /* "SideWinder 3D Pro" or whatever */
-    char *compat_name; /* Similar to name, but compatible with the pre-2.0.12 version */
     SDL_JoystickGUID guid;
     dev_t devnum;
     struct joystick_hwdata *hwdata;
@@ -185,12 +184,11 @@ GuessIsJoystick(int fd)
 }
 
 static int
-IsJoystick(const char *path, int fd, char **name_return, char** compat_name_return, SDL_JoystickGUID *guid)
+IsJoystick(const char *path, int fd, char **name_return, SDL_JoystickGUID *guid)
 {
     struct input_id inpid;
     Uint16 *guid16 = (Uint16 *)guid->data;
     char *name;
-    char *compat_name;
     char product_string[128];
 
     if (ioctl(fd, JSIOCGNAME(sizeof(product_string)), product_string) >= 0) {
@@ -214,9 +212,7 @@ IsJoystick(const char *path, int fd, char **name_return, char** compat_name_retu
     }
 
     name = SDL_CreateJoystickName(inpid.vendor, inpid.product, NULL, product_string);
-    compat_name = SDL_CreateCompatJoystickName(inpid.vendor, inpid.product, NULL, product_string);
-
-    if (!name || !compat_name) {
+    if (!name) {
         return 0;
     }
 
@@ -225,7 +221,6 @@ IsJoystick(const char *path, int fd, char **name_return, char** compat_name_retu
         HIDAPI_IsDevicePresent(inpid.vendor, inpid.product, inpid.version, name)) {
         /* The HIDAPI driver is taking care of this device */
         SDL_free(name);
-        SDL_free(compat_name);
         return 0;
     }
 #endif
@@ -256,11 +251,9 @@ IsJoystick(const char *path, int fd, char **name_return, char** compat_name_retu
 
     if (SDL_ShouldIgnoreJoystick(name, *guid)) {
         SDL_free(name);
-        SDL_free(compat_name);
         return 0;
     }
     *name_return = name;
-    *compat_name_return = compat_name;
     return 1;
 }
 
@@ -305,7 +298,6 @@ FreeJoylistItem(SDL_joylist_item *item)
     SDL_free(item->mapping);
     SDL_free(item->path);
     SDL_free(item->name);
-    SDL_free(item->compat_name);
     SDL_free(item);
 }
 
@@ -316,7 +308,6 @@ MaybeAddDevice(const char *path)
     int fd = -1;
     int isstick = 0;
     char *name = NULL;
-    char *compat_name = NULL;
     SDL_JoystickGUID guid;
     SDL_joylist_item *item;
 
@@ -344,7 +335,7 @@ MaybeAddDevice(const char *path)
     SDL_Log("Checking %s\n", path);
 #endif
 
-    isstick = IsJoystick(path, fd, &name, &compat_name, &guid);
+    isstick = IsJoystick(path, fd, &name, &guid);
     close(fd);
     if (!isstick) {
         return -1;
@@ -358,7 +349,6 @@ MaybeAddDevice(const char *path)
     item->devnum = sb.st_rdev;
     item->path = SDL_strdup(path);
     item->name = name;
-    item->compat_name = compat_name;
     item->guid = guid;
 
     if ((item->path == NULL) || (item->name == NULL)) {
@@ -818,13 +808,6 @@ static const char *
 LINUX_JoystickGetDeviceName(int device_index)
 {
     return JoystickByDevIndex(device_index)->name;
-}
-
-/* Function to get the device-dependent old name of a joystick */
-static const char *
-LINUX_JoystickGetCompatDeviceName(int device_index)
-{
-    return JoystickByDevIndex(device_index)->compat_name;
 }
 
 static int
@@ -1824,8 +1807,7 @@ SDL_JoystickDriver SDL_LINUX_JoystickDriver =
     LINUX_JoystickUpdate,
     LINUX_JoystickClose,
     LINUX_JoystickQuit,
-    LINUX_JoystickGetGamepadMapping,
-    LINUX_JoystickGetCompatDeviceName,
+    LINUX_JoystickGetGamepadMapping
 };
 
 #endif /* SDL_JOYSTICK_LINUX */
