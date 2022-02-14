@@ -2152,8 +2152,8 @@ dnl Set up the Mali video driver if enabled
 CheckMaliVideo()
 {
     AC_ARG_ENABLE(video-mali,
-AC_HELP_STRING([--enable-video-mali], [use Mali EGL video driver [[default=yes]]]),
-                  , enable_video_mali=yes)
+AC_HELP_STRING([--enable-video-mali], [use Mali EGL video driver [[default=no]]]),
+                  , enable_video_mali=no)
     if test x$enable_video = xyes -a x$enable_video_mali = xyes; then
         AC_MSG_CHECKING(for Mali FB API)
         have_mali_egl=no
